@@ -10,16 +10,15 @@ LogitSolver::LogitSolver() {
 }
 
 bool LogitSolver::train(const std::vector<std::pair<pair_dd, bool> > &s) {
-    cv::Mat X(s.size(), 3, CV_64F);
+    cv::Mat X(s.size(), 2, CV_64F);
     cv::Mat Y(s.size(), 1, CV_64F);
     for (size_t i = 0; i < s.size(); ++i) {
         X.at<double>(i, 0) = s[i].first.first;
         X.at<double>(i, 1) = s[i].first.second;
-        X.at<double>(i, 2) = 1.0;
         Y.at<double>(i, 0) = static_cast<double>(s[i].second);
     }
-    cv::Mat W = cv::Mat::zeros(3, 1, CV_64F);
-    cv::Mat updW = cv::Mat::ones(3, 1, CV_64F);
+    cv::Mat W = cv::Mat::zeros(2, 1, CV_64F);
+    cv::Mat updW = cv::Mat::ones(2, 1, CV_64F);
     int counter = 0;
     double a = 0.01;
     while (counter < 10000 && cv::norm(W , updW) > 1E-8) {
@@ -53,12 +52,11 @@ bool LogitSolver::save(std::ofstream &out) {
 }
 
 pair_bd LogitSolver::classify(const pair_dd &item) {
-    cv::Mat x(3, 1, CV_64F);
+    cv::Mat x(2, 1, CV_64F);
     x.at<double>(0, 0) = item.first;
     x.at<double>(1, 0) = item.second;
-    x.at<double>(2, 0) = 1.0;
     cv::Mat mres = flogit(solution.t() * x);
-    bool res = mres.at<double>(0, 0) > 0.5 ? 1.0 : 0.0;
+    bool res = mres.at<double>(0, 0) > 0.455 ? 1.0 : 0.0;
     return std::make_pair(res, mres.at<double>(0, 0));
 }
 
