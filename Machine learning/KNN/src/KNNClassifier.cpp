@@ -16,7 +16,7 @@ int KNNClassifier::classify(const point2d &item) {
                std::back_inserter(res));
     size_t zero = 0;
     for (size_t i = 0; i < res.size(); ++i)
-        if (res[i].second)
+        if (res[i].second == 0)
             ++zero;
     if (2 * zero > knn)
         return 0;

@@ -47,7 +47,26 @@ int main(int argc, char** argv) {
         samples.push_back(std::make_pair(KNN::point2d(x, y), label));
     }
 
-    solver->train(samples);
+    double int_average = 0.0, ext_average = 0.0;
+    for (size_t i = 0; i < samples.size(); ++i) {
+        std::vector<std::pair<KNN::point2d, int> > train_samp = samples;
+        train_samp.erase(train_samp.begin() + i);
+        solver->train(train_samp);
+        double temp_internal = 0.0;
+        for (size_t j = 0; j < samples.size(); ++j) {
+            int res = solver->classify(samples[j].first);
+            if (j == i)
+                ext_average += (res != samples[j].second);
+            else
+                temp_internal += (res != samples[j].second);
+        }
+        int_average += temp_internal / train_samp.size();
+    }
+
+    std::cout << "Average internal error = " << int_average / samples.size()
+              << std::endl;
+    std::cout << "Average external error = " << ext_average / samples.size()
+              << std::endl;
 
     StreamHandler io(argc > 3 ? argv[2] : "",
                      argc > 4 ? argv[3] : "");
