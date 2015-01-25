@@ -43,10 +43,18 @@ int main(int argc, char** argv) {
             in >> x >> c >> y >> c >> label;
             samples.push_back(std::make_pair(std::make_pair(x, y), label));
         }
-        if (!solver->train(samples))
+        if (!solver->train(samples)) {
             std::cout << "Error: unable train on train set" << std::endl;
-        else
+        } else {
             solver->save(out);
+            double error_int = 0.0;
+            for (size_t i = 0; i < samples.size(); ++i) {
+                double val = solver->classify(samples[i].first);
+                error_int += sqrt((samples[i].second - val) * (samples[i].second - val));
+            }
+            std::cout << "Internal training error = "
+                      << error_int / samples.size() << std::endl;
+        }
         delete solver;
         return 0;
     }

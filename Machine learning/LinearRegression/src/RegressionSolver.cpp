@@ -8,11 +8,12 @@ namespace regression {
 bool RegressionSolver::train(
         const std::vector<std::pair<pair_ii, double> > &s) {
     using namespace boost::numeric::ublas;
-    matrix<double> fi(s.size(), 2);
+    matrix<double> fi(s.size(), 3);
     matrix<double> y(s.size(), 1);
     for (size_t i = 0; i < s.size(); ++i) {
         fi(i, 0) = s[i].first.first;
         fi(i, 1) = s[i].first.second;
+        fi(i, 2) = 1.0;
         y(i, 0) = s[i].second;
     }
     matrix<double> to_inv = prod(trans(fi), fi);
@@ -38,9 +39,10 @@ bool RegressionSolver::load(std::ifstream &in) {
 }
 
 double RegressionSolver::classify(const pair_ii &item) {
-    boost::numeric::ublas::matrix<double> mitem(1, 2);
+    boost::numeric::ublas::matrix<double> mitem(1, 3);
     mitem(0, 0) = item.first;
     mitem(0, 1) = item.second;
+    mitem(0, 2) = 1.0;
     return prod(mitem, solution)(0, 0);
 }
 
