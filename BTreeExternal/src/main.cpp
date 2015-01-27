@@ -7,8 +7,8 @@
 #include <iostream>
 #include <set>
 
-#define MAX_KEY_VAL_TEST 1000
-#define REPEAT_RANDOM 10
+#define MAX_KEY_VAL_TEST 1000000
+#define REPEAT_RANDOM 25
 
 void showHint() {
     std::cout << "Illegal function parameters" << std::endl;
@@ -21,30 +21,45 @@ void showHint() {
 }
 
 void insertRandomTest() {
-    size_t total_cost[MAX_KEY_VAL_TEST];
-    size_t amount[MAX_KEY_VAL_TEST];
-    for (size_t dim = 5; dim <= 16; dim++) {
+    size_t total_cost[MAX_KEY_VAL_TEST + 1];
+    size_t amount[MAX_KEY_VAL_TEST + 1];
+    for (size_t dim = 6; dim <= 16; dim += 2) {
+        std::cout << "Order = " << dim << std::endl;
         for (size_t i = 0; i < MAX_KEY_VAL_TEST; ++i) {
             total_cost[i] = 0;
             amount[i] = 0;
         }
         for (size_t o = 0; o < REPEAT_RANDOM; ++o) {
+            std::cout << "\tRandom iteration No " << o << std::endl;
             ExteranlBTree<int> tree(dim);
             Reader reader(sizeof(int) * (dim - 1) +
                           (dim + 1) * sizeof(size_t));
             tree.setReader(&reader);
             std::set<int> tree_sim;
+            for (size_t i = 0; i < MAX_KEY_VAL_TEST; ++i)
+                tree_sim.insert(i);
             for (int i = 0; i < 2 * MAX_KEY_VAL_TEST; ++i) {
                 int val = std::abs(rand() % (MAX_KEY_VAL_TEST));
-                bool is_in = tree_sim.find(val) != tree_sim.end();
+                bool is_in = tree_sim.find(val) == tree_sim.end();
                 reader.dropCounter();
                 assert(!is_in == tree.insert(val));
                 size_t cost = reader.getCounter();
-                if (!is_in) {
-                    total_cost[tree_sim.size()] += cost;
-                    amount[tree_sim.size()]++;
-                    tree_sim.insert(val);
+                {
+                    size_t sz = MAX_KEY_VAL_TEST - tree_sim.size();
+                    total_cost[sz] += cost;
+                    amount[sz]++;
+                    tree_sim.erase(val);
                 }
+            }
+            size_t sz = MAX_KEY_VAL_TEST - tree_sim.size();
+            for (std::set<int>::iterator i = tree_sim.begin();
+                        i != tree_sim.end(); ++i) {
+                reader.dropCounter();
+                assert(tree.insert(*i));
+                size_t cost = reader.getCounter();
+                total_cost[sz] += cost;
+                amount[sz]++;
+                ++sz;
             }
         }
         std::fstream out(std::to_string(dim) + ".csv",
