@@ -128,12 +128,14 @@ void deleteRandomTest() {
             total_cost[i] = 0;
             amount[i] = 0;
         }
+        std::cout << "Order = " << dim << std::endl;
         for (size_t o = 0; o < REPEAT_RANDOM; ++o) {
             ExteranlBTree<int> tree(dim);
             Reader reader(sizeof(int) * (dim - 1) +
                           (dim + 2) * sizeof(size_t));
             tree.setReader(&reader);
             std::set<int> tree_sim;
+            std::cout << "\tRandom = " << o << std::endl;
             for (size_t i = 0; i < MAX_KEY_VAL_TEST; ++i) {
                 tree.insert(i);
                 tree_sim.insert(i);
