@@ -2,9 +2,11 @@
 #include "ExternalReaderDammy.h"
 #include "Interpreter.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <random>
 #include <set>
 
 #define MAX_KEY_VAL_TEST 1000000
@@ -173,6 +175,77 @@ void deleteRandomTest() {
     }
 }
 
+void insertTest() {
+    size_t total_cost[MAX_KEY_VAL_TEST];
+    for (size_t dim = 6; dim <= 16; dim += 2) {
+        int values[MAX_KEY_VAL_TEST];
+        for (size_t i = 0; i < MAX_KEY_VAL_TEST + 1; ++i) {
+            total_cost[i] = 0;
+            values[i] = i;
+        }
+        ExteranlBTree<int> tree(dim);
+        Reader reader(sizeof(int) * (dim - 1) +
+                      (dim + 2) * sizeof(size_t));
+        tree.setReader(&reader);
+        std::set<int> tree_sim;
+        std::random_shuffle(values, values + MAX_KEY_VAL_TEST);
+        for (int i = 0; i < MAX_KEY_VAL_TEST; ++i) {
+            if (i % 100 == 0)
+                std::cout << "\tvalue " << i << std::endl;
+            int val = values[i];
+            reader.dropCounter();
+            bool del_res = tree.insert(val);
+            assert(del_res == (tree_sim.insert(val).second == 1));
+            total_cost[tree_sim.size()] += reader.getCounter();
+        }
+        std::fstream out(std::to_string(dim) + ".csv",
+                         std::ios_base::out);
+        for (size_t i = 0; i < MAX_KEY_VAL_TEST + 1; ++i) {
+            out << i << ";";
+            out << (float)total_cost[i];
+            out << "\n";
+        }
+        std::cout << "Order " << dim << " is OK!" << std::endl;
+    }
+}
+
+void deleteTest() {
+    size_t total_cost[MAX_KEY_VAL_TEST + 1];
+    for (size_t dim = 6; dim <= 16; dim += 2) {
+        int values[MAX_KEY_VAL_TEST];
+        ExteranlBTree<int> tree(dim);
+        Reader reader(sizeof(int) * (dim - 1) +
+                      (dim + 2) * sizeof(size_t));
+        tree.setReader(&reader);
+        std::set<int> tree_sim;
+        for (size_t i = 0; i < MAX_KEY_VAL_TEST + 1; ++i) {
+            total_cost[i] = 0;
+            values[i] = i;
+            tree.insert(i);
+            tree_sim.insert(i);
+        }
+        std::random_shuffle(values, values + MAX_KEY_VAL_TEST);
+        for (int i = 0; i < MAX_KEY_VAL_TEST; ++i) {
+            if (i % 100 == 0)
+                std::cout << "\tvalue " << i << std::endl;
+            int val = values[i];
+            reader.dropCounter();
+            bool del_res = tree.erase(val);
+            assert(del_res);
+            total_cost[tree_sim.size()] += reader.getCounter();
+            tree_sim.erase(i);
+        }
+        std::fstream out(std::to_string(dim) + ".csv",
+                         std::ios_base::out);
+        for (size_t i = 0; i < MAX_KEY_VAL_TEST + 1; ++i) {
+            out << i << ";";
+            out << (float)total_cost[i];
+            out << "\n";
+        }
+        std::cout << "Order " << dim << " is OK!" << std::endl;
+    }
+}
+
 int main(int argc, char** argv) {
 //    srand(time(NULL));
     std::fstream out("tree.dat", std::ios_base::out);
@@ -188,6 +261,14 @@ int main(int argc, char** argv) {
         }
         if (strcmp(argv[1], "--delete") == 0) {
             deleteRandomTest();
+            return 0;
+        }
+        if (strcmp(argv[1], "--insert1") == 0) {
+            insertTest();
+            return 0;
+        }
+        if (strcmp(argv[1], "--delete1") == 0) {
+            deleteTest();
             return 0;
         }
         if (strcmp(argv[1], "--interactive") == 0) {
