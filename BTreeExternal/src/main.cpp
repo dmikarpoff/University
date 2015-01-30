@@ -3,6 +3,7 @@
 #include "Interpreter.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <ctime>
 #include <iostream>
@@ -80,30 +81,33 @@ void insertRandomTest() {
 }
 
 void findRandomTest() {
-    size_t total_cost[MAX_KEY_VAL_TEST];
-    size_t amount[MAX_KEY_VAL_TEST];
-    for (size_t dim = 4; dim <= 16; dim += 2) {
+    float total_cost[MAX_KEY_VAL_TEST + 1];
+    float amount[MAX_KEY_VAL_TEST + 1];
+    for (size_t dim = 12; dim <= 16; dim += 2) {
         for (size_t i = 0; i < MAX_KEY_VAL_TEST; ++i) {
             total_cost[i] = 0;
             amount[i] = 0;
         }
+        std::cout << "Tree order is " << dim << std::endl;
         for (size_t o = 0; o < REPEAT_RANDOM; ++o) {
             ExteranlBTree<int> tree(dim);
             Reader reader(sizeof(int) * (dim - 1) +
                           (dim + 2) * sizeof(size_t));
             tree.setReader(&reader);
             std::set<int> tree_sim;
+            std::cout << "\tRandom step = " << o << std::endl;
             for (int i = 0; i < MAX_KEY_VAL_TEST; ++i) {
                 int val = std::abs(rand() % (MAX_KEY_VAL_TEST));
                 tree.insert(val);
-                tree_sim.insert(val);
-                for (int j = 0; j < MAX_KEY_VAL_TEST; ++j) {
+                tree_sim.insert(val);\
+                for (int j = 0; j < sqrt(MAX_KEY_VAL_TEST); ++j) {
+                    int sval = rand() % (i + 1);
                     reader.dropCounter();
-                    bool btree_in = tree.find(j).second;
-                    bool set_in = tree_sim.find(j) != tree_sim.end();
+                    bool btree_in = tree.find(sval).second;
+                    bool set_in = tree_sim.find(sval) != tree_sim.end();
                     assert(set_in == btree_in);
                     total_cost[tree_sim.size()] += reader.getCounter();
-                    amount[tree_sim.size()]++;
+                    amount[tree_sim.size()] += 1.0;
                 }
             }
         }
