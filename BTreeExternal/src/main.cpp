@@ -23,8 +23,8 @@ void showHint() {
 }
 
 void insertRandomTest() {
-    size_t total_cost[MAX_KEY_VAL_TEST + 1];
-    size_t amount[MAX_KEY_VAL_TEST + 1];
+    float total_cost[MAX_KEY_VAL_TEST + 1];
+    float amount[MAX_KEY_VAL_TEST + 1];
     for (size_t dim = 6; dim <= 16; dim += 2) {
         std::cout << "Order = " << dim << std::endl;
         for (size_t i = 0; i < MAX_KEY_VAL_TEST; ++i) {
@@ -49,7 +49,7 @@ void insertRandomTest() {
                 {
                     size_t sz = MAX_KEY_VAL_TEST - tree_sim.size();
                     total_cost[sz] += cost;
-                    amount[sz]++;
+                    amount[sz] += 1.0;
                     tree_sim.erase(val);
                 }
             }
@@ -60,7 +60,7 @@ void insertRandomTest() {
                 assert(tree.insert(*i));
                 size_t cost = reader.getCounter();
                 total_cost[sz] += cost;
-                amount[sz]++;
+                amount[sz] += 1.0;
                 ++sz;
             }
         }
@@ -123,8 +123,8 @@ void findRandomTest() {
 }
 
 void deleteRandomTest() {
-    size_t total_cost[MAX_KEY_VAL_TEST + 1];
-    size_t amount[MAX_KEY_VAL_TEST + 1];
+    size_t *total_cost = new size_t[MAX_KEY_VAL_TEST + 1];
+    size_t *amount = new size_t[MAX_KEY_VAL_TEST + 1];
     for (size_t dim = 6; dim <= 16; dim += 2) {
         for (size_t i = 0; i < MAX_KEY_VAL_TEST + 1; ++i) {
             total_cost[i] = 0;
@@ -173,6 +173,8 @@ void deleteRandomTest() {
 
         std::cout << "Order " << dim << " is OK!" << std::endl;
     }
+    delete[] total_cost;
+    delete[] amount;
 }
 
 void insertTest() {
